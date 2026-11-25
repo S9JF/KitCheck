@@ -1,0 +1,262 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1020" viewBox="0 0 1600 1020">
+  <style>
+    text { font-family: 'Leelawadee UI', 'Sarabun', 'Noto Sans Thai', Tahoma, sans-serif; fill: #212529; }
+    .h1 { font-size: 26px; font-weight: 700; }
+    .h2 { font-size: 15px; fill: #495057; }
+    .zone { font-size: 15px; font-weight: 700; }
+    .lane { font-size: 14px; font-weight: 700; fill: #C2410C; }
+    .t { font-size: 14px; font-weight: 700; }
+    .s { font-size: 12px; fill: #495057; }
+    .xs { font-size: 11px; fill: #495057; }
+    .w { fill: #FFFFFF; }
+    .node { fill: #FFFFFF; stroke-width: 2; }
+    .vis { stroke: #1C7ED6; }
+    .mq { stroke: #7048E8; }
+    .py { fill: #FFF4E6; stroke: #E8590C; stroke-width: 2.5; }
+    .ln { stroke: #2F9E44; }
+    .gr { stroke: #868E96; }
+    .a { fill: none; stroke: #343A40; stroke-width: 2; marker-end: url(#arr); }
+    .ab { fill: none; stroke: #343A40; stroke-width: 2; marker-end: url(#arr); marker-start: url(#arrs); }
+    .ag { fill: none; stroke: #2F9E44; stroke-width: 2.2; marker-end: url(#arrg); }
+    .agb { fill: none; stroke: #2F9E44; stroke-width: 2.2; marker-end: url(#arrg); marker-start: url(#arrgs); }
+    .am { fill: none; stroke: #7048E8; stroke-width: 2.2; marker-end: url(#arrm); }
+    .av { fill: none; stroke: #1C7ED6; stroke-width: 2.4; marker-end: url(#arrv); }
+    .ad { fill: none; stroke: #868E96; stroke-width: 2; stroke-dasharray: 7 5; marker-end: url(#arr); }
+    .halo { fill: none; stroke: #FFFFFF; stroke-width: 7; }
+  </style>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#343A40"/></marker>
+    <marker id="arrs" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10,0 L0,5 L10,10 z" fill="#343A40"/></marker>
+    <marker id="arrg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F9E44"/></marker>
+    <marker id="arrgs" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M10,0 L0,5 L10,10 z" fill="#2F9E44"/></marker>
+    <marker id="arrm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7048E8"/></marker>
+    <marker id="arrv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1C7ED6"/></marker>
+  </defs>
+
+  <rect width="1600" height="1020" fill="#FAFBFC"/>
+
+  <!-- title -->
+  <text x="20" y="44" class="h1">KitCheck: โครงสร้างระบบยืม-คืนอุปกรณ์ (เน้น CiRA CORE)</text>
+  <text x="20" y="72" class="h2">ทุกเครื่องเชื่อมกันผ่าน Tailscale · ตอนนี้ใช้โหมดจำลอง (/sim) แทนถาดและตาชั่งจริง · AI ทั้งหมดรันเป็น flow ใน CiRA CORE บน GPU</text>
+
+  <!-- ===== zones ===== -->
+  <rect x="20" y="95" width="345" height="500" rx="14" fill="#EAF2FF" stroke="#9DB8E6" stroke-width="1.5"/>
+  <text x="38" y="121" class="zone">โน้ตบุ๊ก (Windows) · โหมดจำลอง</text>
+
+  <rect x="20" y="715" width="345" height="175" rx="14" fill="#F3EEFF" stroke="#B9A6E8" stroke-width="1.5"/>
+  <text x="38" y="741" class="zone">เซิร์ฟเวอร์ saer</text>
+
+  <rect x="395" y="95" width="840" height="905" rx="14" fill="#F1F3F5" stroke="#ADB5BD" stroke-width="1.5"/>
+  <text x="1215" y="121" class="zone" text-anchor="end">Google Cloud VM: kitcheck-gpu (NVIDIA T4)</text>
+
+  <!-- CiRA container (emphasis) -->
+  <rect x="440" y="212" width="780" height="778" rx="12" fill="#FFF8F0" stroke="#F08C00" stroke-width="3"/>
+
+  <!-- lanes -->
+  <rect x="452" y="266" width="756" height="184" rx="8" fill="#FFFFFF" fill-opacity="0.6" stroke="#FFD8A8"/>
+  <rect x="452" y="460" width="756" height="100" rx="8" fill="#FFFFFF" fill-opacity="0.6" stroke="#FFD8A8"/>
+  <rect x="452" y="570" width="756" height="135" rx="8" fill="#FFFFFF" fill-opacity="0.6" stroke="#FFD8A8"/>
+  <rect x="452" y="715" width="756" height="145" rx="8" fill="#FFFFFF" fill-opacity="0.6" stroke="#FFD8A8"/>
+  <text x="464" y="288" class="lane">① ตรวจภาพ</text>
+  <text x="464" y="482" class="lane">② ตาชั่ง</text>
+  <text x="464" y="592" class="lane">③ แจ้งเตือน LINE</text>
+  <text x="464" y="737" class="lane">④ แชตบอท LINE</text>
+
+  <!-- ===== laptop ===== -->
+  <rect x="50" y="135" width="300" height="85" rx="8" class="node vis"/>
+  <text x="64" y="158" class="t">หน้าเว็บจำลอง /sim</text>
+  <text x="64" y="179" class="s">ถาด + ตาชั่งเสมือน, อุปกรณ์ติด QR</text>
+  <text x="64" y="198" class="s">ลาก / หมุน / บัง QR ได้ · ส่งภาพ ~8 fps</text>
+
+  <rect x="50" y="258" width="300" height="200" rx="8" class="node gr" style="stroke:#343A40"/>
+  <text x="64" y="282" class="t">KitCheck server :8080</text>
+  <text x="64" y="301" class="xs">run_local.py · KITCHECK_VIRTUAL=1</text>
+  <text x="64" y="326" class="s">• รับภาพ + น้ำหนักจาก /sim</text>
+  <text x="64" y="347" class="s">• ส่งภาพต่อเป็นสตรีม MJPEG ให้ VM</text>
+  <text x="64" y="368" class="s">• รับผล AI แล้วตัดสินยืม-คืน</text>
+  <text x="64" y="386" class="xs">   (QR ตรงไหม + น้ำหนักตรงไหม)</text>
+  <text x="64" y="408" class="s">• เก็บประวัติ / ใครยืมอะไร</text>
+  <text x="64" y="429" class="s">• ส่งเหตุการณ์ + น้ำหนักออก MQTT</text>
+
+  <rect x="50" y="500" width="300" height="70" rx="8" class="node gr"/>
+  <text x="64" y="523" class="t">หน้าจอ Kiosk (ยืม-คืน)</text>
+  <text x="64" y="545" class="s">สแกนบัตร → กดตรวจ → ผลจาก AI + ตาชั่ง</text>
+
+  <!-- ===== saer ===== -->
+  <rect x="50" y="755" width="300" height="115" rx="8" class="node mq"/>
+  <text x="64" y="778" class="t">MQTT broker (Mosquitto :1883)</text>
+  <text x="64" y="800" class="s">จาก KitCheck:</text>
+  <text x="74" y="818" class="xs">kitcheck/event · kitcheck/sim/scale</text>
+  <text x="64" y="840" class="s">จาก CiRA:</text>
+  <text x="74" y="858" class="xs">kitcheck/cira/result</text>
+
+  <!-- ===== VM: relay ===== -->
+  <rect x="455" y="130" width="200" height="62" rx="8" class="node vis"/>
+  <text x="469" y="152" class="t">Relay :8082</text>
+  <text x="469" y="170" class="xs">gpu_station.py (RELAY_ONLY)</text>
+  <text x="469" y="185" class="xs">ซ้ำเฟรมล่าสุดเมื่อภาพขาด</text>
+
+  <!-- ===== lane 1: vision ===== -->
+  <rect x="460" y="330" width="105" height="50" rx="8" class="node gr"/>
+  <text x="472" y="351" class="t">ButtonRun</text>
+  <text x="472" y="369" class="xs">เริ่ม / วนรอบ</text>
+
+  <rect x="590" y="322" width="150" height="66" rx="8" class="node vis"/>
+  <text x="604" y="344" class="t">GstCam</text>
+  <text x="604" y="362" class="xs">TrayCamera :8082/stream</text>
+  <text x="604" y="378" class="xs">15 fps</text>
+
+  <rect x="770" y="298" width="205" height="114" rx="8" class="node py"/>
+  <text x="784" y="320" class="t">Python+ KitCheck AI</text>
+  <text x="784" y="341" class="s">YOLO11 (last.pt) บน GPU</text>
+  <text x="784" y="360" class="s">อ่าน QR ทุกเฟรม</text>
+  <text x="784" y="378" class="s">+ ขยายอ่านซ้ำรายกล่อง</text>
+  <text x="784" y="398" class="xs">วาดกรอบ · เขียน latest.jpg/json</text>
+
+  <rect x="1005" y="292" width="195" height="46" rx="8" class="node gr"/>
+  <text x="1019" y="312" class="t">Debug</text>
+  <text x="1019" y="329" class="xs">ภาพพร้อมกรอบ AI</text>
+
+  <rect x="1005" y="370" width="195" height="56" rx="8" class="node mq"/>
+  <text x="1019" y="392" class="t">MqttPub</text>
+  <text x="1019" y="411" class="xs">kitcheck/cira/result → broker</text>
+
+  <path class="a" d="M565,355 H588"/>
+  <path class="av" d="M740,355 H768"/>
+  <path class="a" d="M975,340 H990 V315 H1003"/>
+  <path class="a" d="M975,375 H990 V398 H1003"/>
+  <path class="a" d="M870,412 V436 H512 V382"/>
+  <text x="640" y="431" class="xs">วนรอบถัดไป (~2 ผล/วินาที)</text>
+
+  <!-- ===== lane 2: scale ===== -->
+  <rect x="460" y="495" width="180" height="52" rx="8" class="node mq"/>
+  <text x="474" y="516" class="t">MqttSub</text>
+  <text x="474" y="535" class="xs">kitcheck/sim/scale</text>
+  <rect x="700" y="497" width="140" height="48" rx="8" class="node gr"/>
+  <text x="714" y="517" class="t">Debug</text>
+  <text x="714" y="535" class="xs">น้ำหนัก (g)</text>
+  <path class="a" d="M640,521 H698"/>
+  <text x="866" y="525" class="s">น้ำหนักจากตาชั่งเสมือนในหน้า /sim</text>
+
+  <!-- ===== lane 3: alerts ===== -->
+  <rect x="460" y="615" width="160" height="56" rx="8" class="node mq"/>
+  <text x="474" y="637" class="t">MqttSub</text>
+  <text x="474" y="657" class="xs">kitcheck/event</text>
+  <rect x="660" y="606" width="220" height="72" rx="8" class="node py"/>
+  <text x="674" y="628" class="t">Python+ LINE notify</text>
+  <text x="674" y="648" class="s">ยืม / คืน / ผิดปกติ → push</text>
+  <text x="674" y="666" class="xs">ถึงทุกแชตที่พิมพ์ "สมัคร"</text>
+  <rect x="920" y="615" width="120" height="50" rx="8" class="node gr"/>
+  <text x="934" y="636" class="t">Debug</text>
+  <text x="934" y="654" class="xs">ผลการส่ง</text>
+  <path class="a" d="M620,643 H658"/>
+  <path class="a" d="M880,640 H918"/>
+
+  <!-- ===== lane 4: chatbot ===== -->
+  <rect x="460" y="752" width="180" height="66" rx="8" class="node ln"/>
+  <text x="474" y="774" class="t">LineBot</text>
+  <text x="474" y="792" class="xs">Flask + ngrok :3000</text>
+  <text x="474" y="808" class="xs">service /kitcheck_line</text>
+  <rect x="700" y="745" width="330" height="88" rx="8" class="node py"/>
+  <text x="714" y="767" class="t">Python+ LINE chat</text>
+  <text x="714" y="787" class="s">"ถาด" → ภาพถาด + รายการที่ AI เห็น</text>
+  <text x="714" y="805" class="s">"ยืม" → ใครยืมอะไร (ถาม KitCheck)</text>
+  <text x="714" y="823" class="s">"สมัคร" / "เลิก" → รับแจ้งเตือน</text>
+  <path class="ag" d="M640,772 H698"/>
+  <path class="ag" d="M700,800 H642"/>
+  <text x="1046" y="785" class="xs">LineBot เรียก ROS service</text>
+  <text x="1046" y="801" class="xs">ที่โหนดนี้เปิดไว้ แล้วตอบ</text>
+  <text x="1046" y="817" class="xs">ข้อความ + ภาพกลับ</text>
+
+  <!-- ===== shared files ===== -->
+  <rect x="460" y="872" width="740" height="104" rx="8" fill="#FFFFFF" stroke="#CED4DA" stroke-dasharray="5 4"/>
+  <text x="474" y="894" class="t">ไฟล์ที่โหนดใช้ร่วมกัน: /home/cira/kitcheck_model</text>
+  <text x="474" y="916" class="s">last.pt · โมเดล YOLO ที่เทรนแล้ว</text>
+  <text x="474" y="936" class="s">kc_ros.py · ตัวช่วยรับ-ส่งข้อมูลใน flow</text>
+  <text x="474" y="956" class="s">station.env · URL KitCheck, QR_ALWAYS=1</text>
+  <text x="820" y="916" class="s">latest.json / .jpg · AI เขียนทุก 1 วิ → LINE chat อ่าน</text>
+  <text x="820" y="936" class="s">line.env · LINE token (ไฟล์ลับ)</text>
+  <text x="820" y="956" class="s">line_subscribers.json · แชตที่สมัครแจ้งเตือน</text>
+
+  <!-- ===== right: outside world ===== -->
+  <rect x="1280" y="130" width="290" height="75" rx="8" fill="#FFFFFF" stroke="#868E96" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="1294" y="153" class="t">กล้อง searserver (โหมดจริง)</text>
+  <text x="1294" y="173" class="xs">go2rtc MJPEG ผ่าน Tailscale</text>
+  <text x="1294" y="191" class="xs">สลับด้วย sudo kitcheck-camera real</text>
+
+  <rect x="1280" y="430" width="290" height="80" rx="8" class="node ln"/>
+  <text x="1294" y="453" class="t">ผู้ใช้ / เจ้าหน้าที่</text>
+  <text x="1294" y="474" class="s">แชตกับบอท "Cira Core" ในแอป LINE</text>
+  <text x="1294" y="494" class="xs">รับแจ้งเตือน + ถามสถานะได้</text>
+
+  <rect x="1280" y="605" width="290" height="100" rx="8" class="node ln" style="fill:#EBFBEE"/>
+  <text x="1294" y="628" class="t">LINE Messaging API</text>
+  <text x="1294" y="650" class="s">push: แจ้งเตือนจาก ③</text>
+  <text x="1294" y="670" class="s">reply: ตอบแชตจาก ④</text>
+  <text x="1294" y="690" class="xs">ส่ง webhook ไปที่ ngrok</text>
+
+  <rect x="1280" y="765" width="290" height="70" rx="8" class="node ln"/>
+  <text x="1294" y="788" class="t">ngrok (HTTPS สาธารณะ)</text>
+  <text x="1294" y="808" class="xs">*.ngrok-free.dev/callback</text>
+  <text x="1294" y="824" class="xs">→ Flask :3000 ในโหนด LineBot</text>
+
+  <!-- ===== arrows between zones ===== -->
+  <!-- /sim -> KitCheck -->
+  <path class="av" d="M200,220 V256"/>
+  <text x="210" y="243" class="xs">ภาพ + น้ำหนัก</text>
+  <!-- kiosk <-> KitCheck -->
+  <path class="ab" d="M200,460 V498"/>
+  <!-- KitCheck -> relay (stream) -->
+  <path class="halo" d="M350,280 H412 V160 H453"/>
+  <path class="av" d="M350,280 H412 V160 H453"/>
+  <text x="358" y="150" class="xs">MJPEG</text>
+  <!-- relay -> GstCam -->
+  <path class="halo" d="M620,192 V320"/>
+  <path class="av" d="M620,192 V320"/>
+  <!-- AI -> KitCheck (results) -->
+  <path class="halo" d="M900,298 V200 H380 V410 H352"/>
+  <path class="a" d="M900,298 V200 H380 V410 H352" style="stroke:#E8590C"/>
+  <rect x="676" y="183" width="208" height="15" fill="#F1F3F5"/>
+  <text x="680" y="195" class="xs" style="fill:#C2410C;font-weight:700">ผล AI → POST /api/station/live</text>
+  <!-- real camera (dashed) -->
+  <path class="ad" d="M1280,165 H657"/>
+  <text x="1040" y="158" class="xs">โหมดจริงใช้กล้องนี้แทน /sim</text>
+  <!-- KitCheck -> broker -->
+  <path class="am" d="M50,430 H34 V812 H48"/>
+  <!-- broker -> MqttSub x2 -->
+  <path class="am" d="M350,812 H425 V521 H458"/>
+  <path class="am" d="M425,643 H458"/>
+  <!-- notify -> LINE API -->
+  <path class="ag" d="M800,678 V692 H1278"/>
+  <text x="1080" y="686" class="xs" style="fill:#2F9E44;font-weight:700">push แจ้งเตือน</text>
+  <!-- phone <-> LINE -->
+  <path class="agb" d="M1425,512 V603"/>
+  <!-- LINE -> ngrok -->
+  <path class="ag" d="M1425,705 V763"/>
+  <text x="1433" y="740" class="xs" style="fill:#2F9E44">webhook</text>
+  <!-- ngrok -> LineBot -->
+  <path class="ag" d="M1280,800 H1228 V846 H550 V820"/>
+  <text x="1060" y="842" class="xs" style="fill:#2F9E44;font-weight:700">ข้อความจากผู้ใช้</text>
+
+  <!-- CiRA header drawn last so arrows pass under it -->
+  <path d="M440,256 V224 a12,12 0 0 1 12,-12 H1208 a12,12 0 0 1 12,12 V256 z" fill="#F08C00"/>
+  <text x="460" y="241" class="t w" style="font-size:16px">CiRA CORE 1.9.4  ·  Docker ciracore  ·  flow kitcheck_cira_ai.npj (12 โหนด, 4 ส่วน)</text>
+
+  <!-- ===== bottom-left: main flow ===== -->
+  <rect x="20" y="905" width="345" height="95" rx="10" fill="#FFFFFF" stroke="#CED4DA"/>
+  <text x="34" y="927" class="t">ลำดับการยืม-คืน 1 รอบ</text>
+  <text x="34" y="948" class="xs">/sim → KitCheck → Relay → CiRA ① (YOLO + QR)</text>
+  <text x="34" y="966" class="xs">→ KitCheck ตัดสิน (QR + น้ำหนัก) → MQTT event</text>
+  <text x="34" y="984" class="xs">→ CiRA ③ → LINE แจ้งเตือนทันที</text>
+
+  <!-- ===== legend ===== -->
+  <rect x="1265" y="870" width="320" height="130" rx="10" fill="#FFFFFF" stroke="#CED4DA"/>
+  <text x="1279" y="892" class="t">สัญลักษณ์</text>
+  <rect x="1279" y="903" width="22" height="14" rx="3" class="py"/><text x="1308" y="915" class="xs">Python+ (โค้ดของเรา)</text>
+  <rect x="1430" y="903" width="22" height="14" rx="3" class="node mq"/><text x="1459" y="915" class="xs">MQTT</text>
+  <rect x="1279" y="926" width="22" height="14" rx="3" class="node vis"/><text x="1308" y="938" class="xs">ภาพ / กล้อง</text>
+  <rect x="1430" y="926" width="22" height="14" rx="3" class="node ln"/><text x="1459" y="938" class="xs">LINE</text>
+  <rect x="1279" y="949" width="22" height="14" rx="3" class="node gr"/><text x="1308" y="961" class="xs">Debug / ปุ่ม / หน้าจอ</text>
+  <path class="ad" d="M1430,956 H1460"/><text x="1468" y="961" class="xs">โหมดจริง</text>
+  <rect x="1279" y="972" width="22" height="14" rx="3" fill="#FFF8F0" stroke="#F08C00" stroke-width="2"/><text x="1308" y="984" class="xs">กรอบส้ม = ทุกอย่างที่ทำใน CiRA CORE</text>
+</svg>

@@ -1,0 +1,123 @@
+{
+ "hmr_a": {
+  "file": "hmr_a.png",
+  "w": 529,
+  "h": 551,
+  "length": 623,
+  "sticker": [
+   0.594,
+   0.544
+  ],
+  "thick": 0.146
+ },
+ "hmr_b": {
+  "file": "hmr_b.png",
+  "w": 525,
+  "h": 553,
+  "length": 623,
+  "sticker": [
+   0.488,
+   0.476
+  ],
+  "thick": 0.121
+ },
+ "scr_a": {
+  "file": "scr_a.png",
+  "w": 516,
+  "h": 538,
+  "length": 478,
+  "sticker": [
+   0.603,
+   0.405
+  ],
+  "thick": 0.217
+ },
+ "scr_b": {
+  "file": "scr_b.png",
+  "w": 562,
+  "h": 543,
+  "length": 478,
+  "sticker": [
+   0.665,
+   0.337
+  ],
+  "thick": 0.209
+ },
+ "plr_a": {
+  "file": "plr_a.png",
+  "w": 525,
+  "h": 432,
+  "length": 435,
+  "sticker": [
+   0.347,
+   0.662
+  ],
+  "thick": 0.275
+ },
+ "plr_b": {
+  "file": "plr_b.png",
+  "w": 460,
+  "h": 226,
+  "length": 435,
+  "sticker": [
+   0.174,
+   0.518
+  ],
+  "thick": 0.221
+ },
+ "wrn_a": {
+  "file": "wrn_a.png",
+  "w": 464,
+  "h": 426,
+  "length": 493,
+  "sticker": [
+   0.476,
+   0.486
+  ],
+  "thick": 0.25
+ },
+ "wrn_b": {
+  "file": "wrn_b.png",
+  "w": 574,
+  "h": 348,
+  "length": 478,
+  "sticker": [
+   0.462,
+   0.514
+  ],
+  "thick": 0.169
+ },
+ "drl_a": {
+  "file": "drl_a.png",
+  "w": 532,
+  "h": 565,
+  "length": 464,
+  "sticker": [
+   0.716,
+   0.35
+  ],
+  "thick": 0.353
+ },
+ "drl_b": {
+  "file": "drl_b.png",
+  "w": 555,
+  "h": 458,
+  "length": 464,
+  "sticker": [
+   0.559,
+   0.288
+  ],
+  "thick": 0.391
+ },
+ "foreign_ruler": {
+  "file": "foreign_ruler.png",
+  "w": 536,
+  "h": 441,
+  "length": 754,
+  "sticker": [
+   0.506,
+   0.497
+  ],
+  "thick": 0.144
+ }
+}

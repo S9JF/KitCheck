@@ -1,0 +1,2 @@
+Tool pictures: cut out from the tools_yolo dataset (Roboflow Universe: Hardware Tools, Mechanical tools-10000,
+Tools v2, Tool detection v4), all CC BY 4.0. Background removed for the KitCheck tray simulator.

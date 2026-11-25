@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KitCheck · ตู้ยืม–คืน</title>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#1C1E21">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F3EF;--sf:#fff;--ink:#1C1E21;--mu:#5C6068;--ln:#E2E0DA;--ac:#C2410C;--ok:#1F6B37;--okb:#E4F2E8;--okl:#A9D6B7;--wa:#7A4300;--wab:#FBEED6;--wal:#EBC88F;--bd:#A1201A;--bdb:#FCE9E7;--bdl:#F0B1AA}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:'IBM Plex Sans Thai',system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:18px;line-height:1.5;-webkit-user-select:none;user-select:none}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.mu{color:var(--mu)}
+button{font:inherit;cursor:pointer}
+.app{min-height:100vh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 32px;background:#1C1E21;color:#EDEBE5}
+header .brand{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:700}
+header .meta{display:flex;align-items:center;gap:20px;font-size:16px}
+.dot-ok{color:#7FD69B}.dot-bad{color:#F5A49C}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--ac);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700}
+main{flex:1;display:flex;padding:28px 32px;gap:24px;min-height:0}
+.panel{background:var(--sf);border:1px solid var(--ln);border-radius:20px;padding:28px}
+.big{display:inline-flex;align-items:center;justify-content:center;min-height:64px;padding:0 28px;border-radius:14px;border:1px solid #D5D2CA;background:#fff;color:var(--ink);font-weight:700;font-size:20px}
+.big.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+.big.okb{background:#1F7A3F;border-color:#1F7A3F;color:#fff}
+.big:disabled{opacity:.45;cursor:default}
+.big:focus-visible,.lnk:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.lnk{background:none;border:0;color:#EDEBE5;font-size:17px;text-decoration:underline;padding:8px}
+.tray{position:relative;flex:1;min-height:320px;border-radius:16px;background:#2A2C2F;overflow:hidden}
+.tray .bed{position:absolute;inset:3%;border-radius:12px;background:#E9E6DF}
+.tray img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.tray{container-type:size}
+.tray .tray-frame{position:absolute;inset:0}
+.tray .tray-photo{inset:auto;left:50%;top:50%;width:min(100cqw,calc(100cqh * var(--photo-ratio,1.7778)));aspect-ratio:var(--photo-ratio,1.7778);transform:translate(-50%,-50%);visibility:hidden}
+.tray .tray-photo[data-photo-ready]{visibility:visible}
+.tray .hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:22px;color:#45494F}
+.box{position:absolute;border:3px solid #22A05A;border-radius:8px}
+.box span{position:absolute;left:-3px;top:-28px;background:#22A05A;color:#fff;font-size:13px;font-weight:600;padding:2px 8px;border-radius:6px;white-space:nowrap}
+.box.warn{border-color:#E39A1F;border-style:dashed}.box.warn span{background:#E39A1F;color:#1C1E21}
+.box.bad{border-color:#E5483D;border-style:dashed}.box.bad span{background:#E5483D}
+.row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid #EFEDE8}
+.row:last-child{border-bottom:0}
+.sw{width:16px;height:16px;border-radius:4px;flex:none}
+.banner{border-radius:16px;padding:20px}
+.b-ok{background:var(--okb);border:1px solid var(--okl);color:var(--ok)}
+.b-wa{background:var(--wab);border:1px solid var(--wal);color:var(--wa)}
+.b-bd{background:var(--bdb);border:1px solid var(--bdl);color:var(--bd)}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;font-weight:600;font-size:16px}
+input.txt{min-height:56px;border:1px solid #CFCCC4;border-radius:12px;padding:0 16px;font:inherit;font-size:20px;background:#fff;color:var(--ink);width:100%;-webkit-user-select:text;user-select:text}
+.err{color:var(--bd);font-size:16px;min-height:24px}
+.spin{width:56px;height:56px;border-radius:50%;border:6px solid #E2E0DA;border-top-color:var(--ac);animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
+.sim{position:fixed;right:16px;bottom:16px;width:380px;max-height:70vh;display:flex;flex-direction:column;background:#fff;border:2px dashed #8A8E95;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:15px;z-index:10}
+.sim.closed{width:auto}
+.sim h3{margin:0;font-size:15px}
+.sim .list{overflow:auto;padding:4px 14px}
+.sim label{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #EFEDE8}
+.sim input[type=checkbox]{width:20px;height:20px}
+.sim .ft{display:flex;gap:8px;padding:12px 14px;border-top:1px solid #EFEDE8}
+.sim button{min-height:40px;border-radius:10px;border:1px solid #D5D2CA;background:#fff;padding:0 12px;font-weight:600}
+.sim button.pri{background:var(--ink);border-color:var(--ink);color:#fff}
+@media (max-width:900px){main{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div id="sim"></div>
+<script src="/livecam.js?v=live1"></script><!-- bump ?v= on every livecam.js change: Cloudflare keeps .js for 4 h -->
+<script>
+'use strict';
+var TOKEN_KEY='kitcheck_kiosk_token';
+var TOKEN=null;try{TOKEN=localStorage.getItem(TOKEN_KEY);}catch(e){}
+var K={screen:TOKEN?'idle':'login',member:null,scan:null,err:'',busy:false,armed:true,lastScanG:null,count:5,timer:null,idleAt:Date.now(),simOpen:false,simSel:{},simUnread:{},imgUrl:null};
+var ST=null; // latest /api/kiosk/state
+var TH_MONTH=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+var TH_DAY=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+var COLORS={hmr:'#7B5A3C',plr:'#A3362B',scr:'#C8901A',drl:'#2F5F9E',wrn:'#7D838C'};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function fmtDate(ts){var d=new Date(ts);return TH_DAY[d.getDay()]+' '+d.getDate()+' '+TH_MONTH[d.getMonth()]+' '+(d.getFullYear()+543);}
+function clock(){var d=new Date();return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
+function g(n){return n==null?'—':Math.round(n).toLocaleString('th-TH')+' g';}
+function initials(n){n=String(n||'').trim();return n.slice(0,2);}
+
+function api(method,path,body){
+  var h={'Content-Type':'application/json'};if(TOKEN)h.Authorization='Bearer '+TOKEN;
+  return fetch(path,{method:method,headers:h,body:body?JSON.stringify(body):undefined}).then(function(r){
+    return r.json().catch(function(){return {};}).then(function(j){
+      if(r.status===401){setToken(null);K.screen='login';render();}
+      if(!r.ok)throw new Error(j.error||('ผิดพลาด '+r.status));return j;});});
+}
+function setToken(t){TOKEN=t;try{if(t)localStorage.setItem(TOKEN_KEY,t);else localStorage.removeItem(TOKEN_KEY);}catch(e){}}
+function go(screen){K.screen=screen;K.err='';K.idleAt=Date.now();clearInterval(K.timer);K.timer=null;render();}
+function reset(){K.member=null;K.scan=null;K.lastScanG=null;dropImg();go('idle');}
+function dropImg(){if(K.imgUrl){URL.revokeObjectURL(K.imgUrl);K.imgUrl=null;}}
+
+/* ---------- scale + auto trigger ---------- */
+function scale(){return ST&&ST.scale||{grams:null,stable:false,fresh:false,empty_g:30};}
+function onTray(){var s=scale();return s.fresh&&s.grams!=null&&s.grams>s.empty_g;}
+function poll(){
+  if(!TOKEN)return;
+  api('GET','/api/kiosk/state').then(function(s){ST=s;tick();}).catch(function(){ST=null;renderHeader();});
+}
+function tick(){
+  var s=scale();
+  if(s.fresh&&s.grams!=null&&s.grams<=s.empty_g)K.armed=true;
+  if(!K.busy){
+    if(K.screen==='idle'&&K.armed&&s.stable&&onTray())startScan('return');
+    else if(K.screen==='borrow'&&s.stable&&onTray()&&(K.lastScanG==null||Math.abs(s.grams-K.lastScanG)>20))startScan('borrow');
+    else if((K.screen==='done'||K.screen==='returned')&&s.fresh&&!onTray()&&Date.now()-K.idleAt>2500)reset();
+  }
+  if(K.screen==='borrow'&&Date.now()-K.idleAt>90000&&!K.busy)reset();
+  if(K.screen==='retconfirm'&&Date.now()-K.idleAt>90000&&!K.busy)cancelBorrow(); // nobody confirmed: nothing is recorded
+  if((K.screen==='done'||K.screen==='returned')&&Date.now()-K.idleAt>15000)reset();
+  renderLive();renderSim();
+}
+
+/* ---------- actions ---------- */
+function lookup(card){
+  if(K.busy)return;K.busy=true;K.err='';render();
+  api('POST','/api/kiosk/member',{card:card}).then(function(r){K.member=r.member;K.busy=false;K.scan=null;K.lastScanG=null;go('borrow');})
+  .catch(function(e){K.busy=false;K.err=e.message;render();});
+}
+function startScan(kind){
+  if(K.busy)return;K.busy=true;K.armed=false;K.err='';var s=scale();K.lastScanG=s.grams;
+  if(kind==='return')K.screen='returning';render();
+  api('POST','/api/kiosk/scan',{kind:kind,member_id:K.member&&K.member.id}).then(function(r){
+    K.busy=false;K.scan=r.scan;K.idleAt=Date.now();loadImg();
+    if(kind==='borrow'){if(r.scan.status==='ready')startCountdown();else go('borrow');}
+    else go(r.scan.status==='ready'?'retconfirm':'returned');
+  }).catch(function(e){K.busy=false;K.err=e.message;if(kind==='return'){K.screen='idle';}render();});
+}
+function startCountdown(){
+  go('confirm');K.count=5;render();
+  K.timer=setInterval(function(){K.count--;if(K.count<=0){clearInterval(K.timer);K.timer=null;confirmBorrow();}else renderCount();},1000);
+}
+function confirmBorrow(){
+  if(K.busy||!K.scan)return;clearInterval(K.timer);K.timer=null;K.busy=true;render();
+  api('POST','/api/kiosk/scan/'+K.scan.id+'/confirm').then(function(r){K.busy=false;K.scan=r.scan;go('done');})
+  .catch(function(e){K.busy=false;K.err=e.message;go('borrow');});
+}
+function confirmReturn(){
+  if(K.busy||!K.scan)return;K.busy=true;render();
+  api('POST','/api/kiosk/scan/'+K.scan.id+'/confirm').then(function(r){K.busy=false;K.scan=r.scan;go('returned');})
+  .catch(function(e){K.busy=false;K.err=e.message;render();});
+}
+function cancelBorrow(){
+  if(K.scan&&K.scan.status!=='done')api('POST','/api/kiosk/scan/'+K.scan.id+'/cancel').catch(function(){});
+  reset();
+}
+function loadImg(){
+  dropImg();if(!K.scan||!K.scan.has_image)return;
+  fetch('/api/scans/'+K.scan.id+'/image',{headers:{Authorization:'Bearer '+TOKEN}}).then(function(r){return r.ok?r.blob():null;})
+  .then(function(b){if(b){K.imgUrl=URL.createObjectURL(b);render();}}).catch(function(){});
+}
+
+/* ---------- card reader (USB reader types the card number + Enter) ---------- */
+var cardBuf='',cardAt=0;
+document.addEventListener('keydown',function(e){
+  if(K.screen!=='idle'||K.busy)return;
+  var t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'))return;
+  var now=Date.now();if(now-cardAt>300)cardBuf='';cardAt=now;
+  if(e.key==='Enter'){if(cardBuf.length>=4){var c=cardBuf;cardBuf='';e.preventDefault();lookup(c);}return;}
+  if(e.key.length===1)cardBuf+=e.key;
+});
+
+/* ---------- rendering ---------- */
+function headerHtml(){
+  var s=scale(),ok=ST&&(ST.mode!=='mqtt'||ST.mqtt);
+  var right='<span class="'+(ok?'dot-ok':'dot-bad')+'">● '+(ST?(ok?'พร้อมใช้งาน':'กล้องไม่เชื่อมต่อ'):'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้')+'</span>'+
+    (ST&&ST.sim?'<span style="color:#F5C26B">ผลตรวจ: จำลอง</span>':'')+
+    '<span>ถาด '+(s.fresh?g(s.grams):'—')+'</span><span class="mono" id="clk">'+clock()+'</span>';
+  if(K.member&&(K.screen==='borrow'||K.screen==='confirm'||K.screen==='done'))
+    return '<div class="brand"><span class="avatar" aria-hidden="true">'+esc(initials(K.member.name))+'</span><div><div>'+(K.screen==='borrow'?'สวัสดี ':'')+esc(K.member.name)+'</div><div style="font-size:14px;font-weight:400;color:#A3A6AD">รหัส '+esc(K.member.code)+' · ยืมอยู่ '+K.member.loans.length+' ชิ้น</div></div></div>'+
+      '<div class="meta">'+right+(K.screen!=='done'?'<button class="lnk" type="button" data-a="cancel">ยกเลิก</button>':'')+'</div>';
+  return '<div class="brand"><svg width="34" height="34" viewBox="0 0 36 36" aria-hidden="true"><rect x="2" y="2" width="32" height="32" rx="8" fill="#C2410C"></rect><path d="M11 18.5l5 5 9-11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>KitCheck <span style="font-weight:400;color:#A3A6AD;font-size:17px">· ตู้ยืม–คืนเครื่องมือ</span></div><div class="meta">'+right+'</div>';
+}
+function renderHeader(){var h=document.getElementById('hdr');if(h)h.innerHTML=headerHtml();}
+function fitTrayImage(img){
+  if(!img.naturalWidth||!img.naturalHeight)return;
+  var frame=img.parentElement;
+  frame.style.setProperty('--photo-ratio',img.naturalWidth/img.naturalHeight);
+  frame.dataset.photoReady='true';
+}
+function trayHtml(scan,hint){
+  var h='<div class="tray" role="img" aria-label="ภาพถาดเครื่องมือ"><div class="tray-frame'+(K.imgUrl?' tray-photo':'')+'">';
+  if(K.imgUrl)h+='<img onload="fitTrayImage(this)" src="'+K.imgUrl+'" alt="">';else h+='<div class="bed"></div>';
+  if(scan&&scan.dets.length){
+    scan.dets.forEach(function(d){
+      if(!d.box)return;var b=d.box;var cls=d.issue?(d.issue==='unread'?'warn':'bad'):'';
+      if(!K.imgUrl)h+='<div style="position:absolute;left:'+(b[0]*100+1)+'%;top:'+(b[1]*100+1.5)+'%;width:'+(b[2]*100-2)+'%;height:'+(b[3]*100-3)+'%;background:'+(COLORS[d.type]||'#9AA0A8')+';border-radius:10px"></div>';
+      h+='<div class="box '+cls+'" style="left:'+b[0]*100+'%;top:'+b[1]*100+'%;width:'+b[2]*100+'%;height:'+b[3]*100+'%"><span>'+esc(d.type_name)+' · '+esc(d.qr||'QR ?')+'</span></div>';
+    });
+  } else h+='<div class="hint">'+esc(hint||'')+'</div>';
+  return h+'</div></div>';
+}
+function detRows(dets,showW){
+  return dets.map(function(d){
+    return '<div class="row"><span class="sw" style="background:'+(COLORS[d.type]||'#9AA0A8')+'"></span><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:20px">'+esc(d.type_name)+'</div><div class="mono mu" style="font-size:14px">'+esc(d.qr||'อ่าน QR ไม่ได้')+'</div>'+
+      (d.issue_th?'<div style="font-size:15px;color:'+(d.issue==='unread'?'var(--wa)':'var(--bd)')+'">'+esc(d.issue_th)+(d.issue==='out'&&d.loan?' · อยู่กับ '+esc(d.loan.member):'')+'</div>':'')+'</div>'+
+      (showW&&d.weight?'<span class="mu" style="font-size:16px">'+g(d.weight)+'</span>':'')+
+      '<span style="font-weight:700;color:'+(d.issue?'var(--bd)':'#1F7A3F')+'" aria-label="'+(d.issue?'มีปัญหา':'ผ่าน')+'">'+(d.issue?'!':'✓')+'</span></div>';
+  }).join('');
+}
+function render(){
+  var app=document.getElementById('app');
+  var body='';
+  if(K.screen==='login')body=vLogin();
+  else if(K.screen==='idle')body=vIdle();
+  else if(K.screen==='borrow')body=vBorrow();
+  else if(K.screen==='confirm')body=vConfirm();
+  else if(K.screen==='done')body=vDone();
+  else if(K.screen==='returning')body=vBusy('กำลังตรวจของที่คืน…');
+  else if(K.screen==='retconfirm')body=vRetConfirm();
+  else if(K.screen==='returned')body=vReturned();
+  app.innerHTML=(K.screen==='login'?'':'<header id="hdr">'+headerHtml()+'</header>')+body;
+  var f=document.getElementById('lu');if(f)f.focus();
+  if(window.LiveCam)LiveCam.mount('livecam');
+  renderSim();
+}
+function renderLive(){
+  renderHeader();
+  var w=document.getElementById('liveW');if(w){var s=scale();w.textContent=s.fresh?g(s.grams):'—';}
+  var st=document.getElementById('liveS');if(st)st.innerHTML=liveStatus();
+}
+function renderCount(){var c=document.getElementById('cnt');if(c)c.textContent=K.count;var r=document.getElementById('ring');if(r)r.setAttribute('stroke-dashoffset',String(Math.round(553*(1-K.count/5))));}
+function liveStatus(){
+  var s=scale();
+  if(K.busy)return '<span class="pill" style="background:#ECEBFA;color:#3F3D9E">● กำลังตรวจ…</span>';
+  if(!s.fresh)return '<span class="pill" style="background:#ECEBE6;color:#45494F">ไม่มีสัญญาณถาดชั่ง · กด “ตรวจเลย”</span>';
+  if(!onTray())return '<span class="pill" style="background:#ECEBE6;color:#45494F">รอวางเครื่องมือ</span>';
+  if(!s.stable)return '<span class="pill" style="background:#FBEED6;color:#7A4300">● รอให้ถาดนิ่ง…</span>';
+  return '<span class="pill" style="background:#E4F2E8;color:#1F6B37">● ถาดนิ่ง</span>';
+}
+function vBusy(t){return '<main style="align-items:center;justify-content:center;flex-direction:column;gap:20px"><div class="spin" role="status" aria-label="'+esc(t)+'"></div><div style="font-size:26px;font-weight:700">'+esc(t)+'</div></main>';}
+function vLogin(){
+  return '<main style="align-items:center;justify-content:center"><form class="panel" data-f="login" style="width:100%;max-width:440px;display:flex;flex-direction:column;gap:16px"><div style="font-size:28px;font-weight:700">เปิดตู้ยืม–คืน</div><div class="mu">เจ้าหน้าที่เข้าสู่ระบบครั้งเดียว ตู้จะจำไว้</div>'+
+    '<label style="display:flex;flex-direction:column;gap:6px;font-weight:600">ชื่อผู้ใช้<input class="txt" id="lu" name="username" autocomplete="username" required></label>'+
+    '<label style="display:flex;flex-direction:column;gap:6px;font-weight:600">รหัสผ่าน<input class="txt" type="password" name="password" autocomplete="current-password" required></label>'+
+    '<div class="err" role="alert">'+esc(K.err)+'</div><button class="big pri" type="submit">เปิดตู้</button></form></main>';
+}
+function vIdle(){
+  return '<main style="flex-direction:column"><div style="flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px">'+
+    '<section class="panel" style="display:flex;flex-direction:column;gap:18px"><div style="width:96px;height:96px;border-radius:24px;background:#FFF1E8;display:flex;align-items:center;justify-content:center"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C2410C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="14" height="10" rx="2"></rect><path d="M6 10h5M6 13h3"></path><path d="M19 8a4 4 0 0 1 0 8M21 6a7 7 0 0 1 0 12"></path></svg></div>'+
+      '<div><div style="font-size:44px;font-weight:700;line-height:1.15">ยืม</div><div style="font-size:22px;margin-top:8px">แตะบัตรที่เครื่องอ่าน แล้ววางเครื่องมือที่ต้องการบนถาด</div></div><div class="mu">กี่ชิ้นก็ได้ ระบบตรวจเองเมื่อวางเสร็จ</div>'+
+      '<form data-f="card" style="margin-top:auto;display:flex;gap:10px"><input class="txt" name="card" placeholder="หรือพิมพ์รหัสสมาชิก" aria-label="รหัสสมาชิก" autocomplete="off"><button class="big pri" type="submit"'+(K.busy?' disabled':'')+'>ยืม</button></form><div class="err" role="alert">'+esc(K.err)+'</div></section>'+
+    '<section class="panel" style="display:flex;flex-direction:column;gap:18px"><div style="width:96px;height:96px;border-radius:24px;background:#E4F2E8;display:flex;align-items:center;justify-content:center"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#1F7A3F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"></path><path d="M4 9h10a6 6 0 0 1 0 12h-3"></path></svg></div>'+
+      '<div><div style="font-size:44px;font-weight:700;line-height:1.15">คืน</div><div style="font-size:22px;margin-top:8px">วางเครื่องมือบนถาดได้เลย ไม่ต้องแตะบัตร</div></div><div class="mu">ระบบอ่าน QR แล้วรู้เองว่าแต่ละชิ้นเป็นของใคร คืนไม่ครบก็ได้</div>'+
+      '<button class="big okb" type="button" data-a="return" style="margin-top:auto"'+(K.busy?' disabled':'')+'>วางของแล้ว · ตรวจคืน</button></section></div>'+
+    '<footer style="display:flex;gap:28px;justify-content:center;padding-top:20px;color:#45494F;font-size:17px;flex-wrap:wrap"><span>① หันป้าย QR ขึ้นด้านบน</span><span>② วางให้แยกกัน ไม่ซ้อน</span><span>③ ปล่อยมือจากถาด</span></footer></main>';
+}
+function vBorrow(){
+  var sc=K.scan,blocked=sc&&sc.status==='blocked';
+  var side='';
+  if(blocked){
+    side='<div class="banner b-bd"><div style="font-size:24px;font-weight:700">ยืมไม่ได้ ต้องแก้ก่อน</div>'+
+      sc.issues.map(function(i){return '<div>'+esc(i.text)+'</div>';}).join('')+
+      '<div style="font-size:16px;margin-top:6px">หยิบชิ้นที่มีปัญหาออก หรือหันป้าย QR ขึ้น ระบบจะตรวจใหม่เอง</div></div>'+
+      '<div class="panel" style="padding:8px 20px">'+detRows(sc.dets,true)+'</div>';
+  } else {
+    side='<div class="panel" style="display:flex;flex-direction:column;gap:6px"><div style="font-size:24px;font-weight:700">วางเครื่องมือที่จะยืมบนถาด</div><div class="mu">วางเสร็จแล้วปล่อยมือ ระบบตรวจเองเมื่อถาดนิ่ง</div>'+
+      (K.member.loans.length?'<div style="margin-top:8px;font-size:16px"><b>ยืมอยู่แล้ว:</b> '+K.member.loans.map(function(l){return esc(l.type_name)+' '+esc(l.qr);}).join(' · ')+'</div>':'')+'</div>';
+  }
+  return '<main><section style="flex:3 1 0;min-width:0;display:flex;flex-direction:column;gap:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><div style="font-size:24px;font-weight:700">ถาด</div><span id="liveS">'+liveStatus()+'</span></div>'+
+    (blocked?trayHtml(sc,''):'<div class="tray" id="livecam"></div>')+'<div class="err" role="alert">'+esc(K.err)+'</div></section>'+
+    '<aside style="flex:2 1 0;min-width:0;display:flex;flex-direction:column;gap:14px">'+side+
+    '<div class="panel" style="padding:16px 20px;display:flex;justify-content:space-between;align-items:center"><div><div class="mu" style="font-size:15px">น้ำหนักบนถาด</div><div style="font-size:26px;font-weight:700" id="liveW">'+(scale().fresh?g(scale().grams):'—')+'</div></div></div>'+
+    '<button class="big pri" type="button" data-a="scan" style="margin-top:auto"'+(K.busy?' disabled':'')+'>'+(K.busy?'กำลังตรวจ…':(blocked?'ตรวจอีกครั้ง':'ตรวจเลย'))+'</button></aside></main>';
+}
+function vConfirm(){
+  var sc=K.scan;
+  return '<main><section class="panel" style="flex:3 1 0;display:flex;flex-direction:column;gap:6px"><div style="font-size:30px;font-weight:700">จะยืม '+sc.dets.length+' ชิ้น</div>'+
+    '<div class="mu">คืนภายใน <b style="color:var(--ink)">'+fmtDate(sc.due)+'</b> ('+(ST?ST.loan_days:7)+' วัน) · คืนที่ตู้นี้ได้เลย</div><div style="margin-top:10px">'+detRows(sc.dets,true)+'</div>'+
+    (sc.measured_g!=null?'<div class="mu" style="font-size:16px">น้ำหนักบนถาด '+g(sc.measured_g)+(sc.expected_g!=null?' · ตามทะเบียน '+g(sc.expected_g)+' ✓':'')+'</div>':'')+'</section>'+
+    '<aside class="panel" style="flex:2 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px"><div style="position:relative;width:200px;height:200px" role="timer" aria-live="polite">'+
+    '<svg width="200" height="200" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="88" fill="none" stroke="#ECEBE6" stroke-width="14"></circle><circle id="ring" cx="100" cy="100" r="88" fill="none" stroke="#C2410C" stroke-width="14" stroke-linecap="round" stroke-dasharray="553" stroke-dashoffset="'+Math.round(553*(1-K.count/5))+'" transform="rotate(-90 100 100)"></circle></svg>'+
+    '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center"><span id="cnt" style="font-size:72px;font-weight:700;line-height:1">'+K.count+'</span><span class="mu">วินาที</span></div></div>'+
+    '<div style="text-align:center;font-size:20px">บันทึกการยืมอัตโนมัติ<br><span class="mu" style="font-size:17px">ถ้าไม่ใช่ของที่ต้องการ กดยกเลิก</span></div>'+
+    '<div style="display:flex;gap:12px;width:100%"><button class="big" type="button" data-a="cancel" style="flex:1">ยกเลิก</button><button class="big pri" type="button" data-a="confirm" style="flex:1"'+(K.busy?' disabled':'')+'>ยืมเลย</button></div></aside></main>';
+}
+function vDone(){
+  var sc=K.scan;
+  return '<main style="flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center"><svg width="120" height="120" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="26" fill="#1F7A3F"></circle><path d="M17 29l7 7 15-16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>'+
+    '<div style="font-size:44px;font-weight:700;color:var(--ok)">บันทึกการยืมแล้ว</div><div style="font-size:22px">'+sc.dets.map(function(d){return esc(d.type_name);}).join(' · ')+' · คืนภายใน '+fmtDate(sc.due)+'</div>'+
+    '<div style="font-size:22px;font-weight:600">ยกของออกจากถาดได้เลย</div><div class="mu">รอบ <span class="mono">'+esc(sc.id)+'</span> · กลับหน้าแรกเองเมื่อถาดว่าง</div>'+
+    '<button class="big" type="button" data-a="home">กลับหน้าแรก</button></main>';
+}
+function vRetConfirm(){
+  var sc=K.scan;
+  var ok=sc.dets.filter(function(d){return !d.issue&&d.loan;});
+  var bad=sc.dets.filter(function(d){return d.issue&&d.issue!=='notout';});
+  var not=sc.dets.filter(function(d){return d.issue==='notout';});
+  var okq={};ok.forEach(function(d){okq[d.qr]=1;});
+  var left=sc.remaining.map(function(r){return {member:r.member,loans:r.loans.filter(function(l){return !okq[l.qr];})};}).filter(function(r){return r.loans.length;});
+  var h='<main><section style="flex:3 1 0;min-width:0;display:flex;flex-direction:column;gap:12px">'+trayHtml(sc,'')+
+    (sc.measured_g!=null?'<div class="mu" style="font-size:16px">น้ำหนักบนถาด '+g(sc.measured_g)+(sc.expected_g!=null?' · ตามทะเบียน '+g(sc.expected_g):'')+'</div>':'')+'</section>'+
+    '<aside style="flex:2 1 0;min-width:0;display:flex;flex-direction:column;gap:14px">'+
+    '<div class="panel" style="padding:20px 24px"><div style="font-size:30px;font-weight:700">'+(ok.length?'จะคืน '+ok.length+' ชิ้น':'ส่งให้เจ้าหน้าที่ตรวจ')+'</div>'+
+    ok.map(function(d){return '<div class="row"><span class="sw" style="background:'+(COLORS[d.type]||'#9AA0A8')+'"></span><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:20px">'+esc(d.type_name)+'</div><div class="mono mu" style="font-size:14px">'+esc(d.qr)+'</div></div><span class="mu" style="font-size:16px">ของ '+esc(d.loan.member)+'</span></div>';}).join('')+'</div>';
+  if(bad.length)h+='<div class="banner b-wa"><div style="font-size:18px;font-weight:700">อีก '+bad.length+' ชิ้นระบบอ่านไม่ได้ · จะส่งให้เจ้าหน้าที่ตรวจ</div>'+
+    bad.map(function(d){return '<div style="color:var(--ink)">'+esc(d.type_name)+' · '+esc(d.issue_th)+'</div>';}).join('')+'</div>';
+  if(not.length)h+='<div class="mu" style="font-size:16px">ไม่ได้ถูกยืมอยู่ (ไม่นับ): '+not.map(function(d){return esc(d.type_name)+' '+esc(d.qr);}).join(' · ')+'</div>';
+  left.forEach(function(r){
+    h+='<div class="banner b-wa"><div style="font-size:18px;font-weight:700">คืนไม่ครบ · ยังค้างในชื่อ '+esc(r.member)+'</div>'+
+      r.loans.map(function(l){return '<div style="display:flex;justify-content:space-between;color:var(--ink)"><b>'+esc(l.type_name)+' '+esc(l.qr)+'</b><span>คืน '+fmtDate(l.due)+'</span></div>';}).join('')+'</div>';
+  });
+  if(ok.length&&!left.length)h+='<div class="banner b-ok"><b>คืนครบทุกชิ้นที่ยืมไป</b></div>';
+  return h+'<div class="err" role="alert">'+esc(K.err)+'</div><div style="font-size:20px;font-weight:600;margin-top:auto">แน่ใจว่าจะคืนตามนี้?</div>'+
+    '<div style="display:flex;gap:12px"><button class="big" type="button" data-a="cancel" style="flex:1">ยกเลิก</button><button class="big okb" type="button" data-a="retok" style="flex:2"'+(K.busy?' disabled':'')+'>'+(K.busy?'กำลังบันทึก…':'ยืนยันคืน')+'</button></div></aside></main>';
+}
+function vReturned(){
+  var sc=K.scan;
+  var ok=sc.dets.filter(function(d){return !d.issue&&d.loan;});
+  var bad=sc.dets.filter(function(d){return d.issue&&d.issue!=='notout';});
+  var not=sc.dets.filter(function(d){return d.issue==='notout';});
+  var h='<main><section style="flex:3 1 0;min-width:0;display:flex;flex-direction:column;gap:12px">'+trayHtml(sc,'')+
+    (sc.measured_g!=null?'<div class="mu" style="font-size:16px">น้ำหนักบนถาด '+g(sc.measured_g)+(sc.expected_g!=null?' · ตามทะเบียน '+g(sc.expected_g):'')+'</div>':'')+'</section>'+
+    '<aside style="flex:2 1 0;min-width:0;display:flex;flex-direction:column;gap:14px">';
+  if(ok.length){
+    var who={};ok.forEach(function(d){who[d.loan.member]=1;});
+    h+='<div class="banner b-ok"><div style="font-size:28px;font-weight:700">คืนแล้ว '+ok.length+' ชิ้น ✓</div><div style="font-size:16px;color:var(--ink)">ของ <b>'+esc(Object.keys(who).join(', '))+'</b></div>'+
+      ok.map(function(d){return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--okl);color:var(--ink)"><b>'+esc(d.type_name)+'</b><span class="mono" style="font-size:15px">'+esc(d.qr)+'</span></div>';}).join('')+'</div>';
+  }
+  if(bad.length||sc.issues.length){
+    h+='<div class="banner b-wa"><div style="font-size:20px;font-weight:700">ส่งให้เจ้าหน้าที่ตรวจ '+(bad.length?bad.length+' ชิ้น':'')+'</div>'+
+      bad.map(function(d){return '<div style="color:var(--ink)">'+esc(d.type_name)+' · '+esc(d.issue_th)+'</div>';}).join('')+
+      sc.issues.map(function(i){return '<div style="color:var(--ink)">'+esc(i.text)+'</div>';}).join('')+
+      '<div style="font-size:15px;color:var(--ink)">วางชิ้นนั้นไว้ที่ชั้น “รอตรวจ” ระบบจะแจ้งเจ้าหน้าที่</div></div>';
+  }
+  if(not.length&&!ok.length&&!bad.length){
+    h+='<div class="banner b-bd"><div style="font-size:22px;font-weight:700">ของเหล่านี้ไม่ได้ถูกยืมอยู่</div><div style="color:var(--ink)">ถ้าจะยืม แตะบัตรก่อน แล้ววางของใหม่</div></div>';
+  } else if(not.length){
+    h+='<div class="mu" style="font-size:16px">ไม่ได้ถูกยืมอยู่: '+not.map(function(d){return esc(d.type_name)+' '+esc(d.qr);}).join(' · ')+'</div>';
+  }
+  if(!sc.dets.length)h+='<div class="banner b-bd"><div style="font-size:22px;font-weight:700">ไม่พบเครื่องมือบนถาด</div><div style="color:var(--ink)">หันป้าย QR ขึ้น แล้วลองใหม่</div></div>';
+  sc.remaining.forEach(function(r){
+    h+='<div class="banner b-wa"><div style="font-size:16px;font-weight:600">ยังค้างอยู่ในชื่อ '+esc(r.member)+'</div>'+
+      r.loans.map(function(l){return '<div style="display:flex;justify-content:space-between;color:var(--ink)"><b>'+esc(l.type_name)+' '+esc(l.qr)+'</b><span>คืน '+fmtDate(l.due)+'</span></div>';}).join('')+'</div>';
+  });
+  if(ok.length)h+='<div style="font-size:17px">ยกของไปเก็บที่ชั้นตามป้ายได้เลย</div>';
+  return h+'<button class="big" type="button" data-a="home" style="margin-top:auto">เสร็จ · กลับหน้าแรก</button></aside></main>';
+}
+
+/* ---------- simulator drawer (sim mode only) ---------- */
+function renderSim(){
+  var el=document.getElementById('sim');
+  if(!ST||!ST.sim||!TOKEN){el.innerHTML='';K.simSig='';return;}
+  var sig=K.simOpen+'|'+JSON.stringify(ST.tray)+'|'+ST.catalog.map(function(t){return t.qr+(t.holder||'');}).join(',');
+  if(sig===K.simSig)return; // redraw only when something changed, so scrolling and ticking are not interrupted
+  K.simSig=sig;
+  if(!K.simOpen){el.innerHTML='<div class="sim closed"><div class="ft" style="border:0"><button type="button" data-a="simopen">จำลองถาด (โหมดทดสอบ)</button></div></div>';return;}
+  var tray=ST.tray||{qrs:[]};
+  var h='<div class="sim" role="region" aria-label="จำลองถาด"><div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #EFEDE8"><h3>จำลองของบนถาด</h3><button type="button" data-a="simclose" aria-label="ปิด">✕</button></div>'+
+    '<div class="mu" style="padding:6px 14px;font-size:13px">ติ๊กชิ้นที่วาง แล้วกด “วางบนถาด” · บนถาดตอนนี้ '+tray.qrs.length+' ชิ้น</div><div class="list">';
+  ST.catalog.forEach(function(t){
+    h+='<label><input type="checkbox" data-sim="'+esc(t.qr)+'"'+(K.simSel[t.qr]?' checked':'')+'><span style="flex:1"><b>'+esc(t.type_name)+'</b> <span class="mono" style="font-size:13px">'+esc(t.qr)+'</span>'+(t.holder?' <span class="mu" style="font-size:13px">· '+esc(t.holder)+'</span>':'')+'</span>'+
+      '<span style="font-size:12px;display:flex;align-items:center;gap:4px"><input type="checkbox" data-unread="'+esc(t.qr)+'"'+(K.simUnread[t.qr]?' checked':'')+' aria-label="QR อ่านไม่ได้">QR เสีย</span></label>';
+  });
+  h+='</div><div class="ft"><button class="pri" type="button" data-a="simput" style="flex:1">วางบนถาด</button><button type="button" data-a="simclear">ยกออกหมด</button></div></div>';
+  el.innerHTML=h;
+}
+function simApply(clear){
+  if(clear){K.simSel={};K.simUnread={};}
+  var qrs=Object.keys(K.simSel).filter(function(q){return K.simSel[q];});
+  var unread=qrs.filter(function(q){return K.simUnread[q];});
+  api('POST','/api/sim/tray',{qrs:qrs,unread:unread}).then(function(s){ST.scale=s.scale;ST.tray=s.tray;K.simSig='';tick();}).catch(function(e){alert(e.message);});
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-a]');if(!b)return;var a=b.getAttribute('data-a');
+  if(a==='return')startScan('return');
+  else if(a==='scan')startScan('borrow');
+  else if(a==='confirm')confirmBorrow();
+  else if(a==='retok')confirmReturn();
+  else if(a==='cancel')cancelBorrow();
+  else if(a==='home')reset();
+  else if(a==='simopen'){K.simOpen=true;K.simSig='';renderSim();}
+  else if(a==='simclose'){K.simOpen=false;K.simSig='';renderSim();}
+  else if(a==='simput')simApply(false);
+  else if(a==='simclear')simApply(true);
+});
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.hasAttribute('data-sim'))K.simSel[t.getAttribute('data-sim')]=t.checked;
+  if(t.hasAttribute('data-unread'))K.simUnread[t.getAttribute('data-unread')]=t.checked;
+});
+document.addEventListener('submit',function(e){
+  var f=e.target,kind=f.getAttribute('data-f');if(!kind)return;e.preventDefault();
+  var fd=new FormData(f);
+  if(kind==='login'){
+    api('POST','/api/login',{username:fd.get('username'),password:fd.get('password')}).then(function(r){setToken(r.token);go('idle');poll();})
+    .catch(function(err){K.err=err.message;render();});
+  } else if(kind==='card'){var c=String(fd.get('card')||'').trim();if(c)lookup(c);}
+});
+
+if(window.LiveCam)LiveCam.init({token:function(){return TOKEN;}});
+render();poll();setInterval(poll,700);
+setInterval(function(){var c=document.getElementById('clk');if(c)c.textContent=clock();},10000);
+</script>
+</body>
+</html>

@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ถาดจำลอง · KitCheck</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#F4F2EE; --card:#FFFFFF; --ink:#1C1E21; --mu:#6B6F76; --line:#E2DFD8; --acc:#C2410C; --ok:#1F7A45; --bad:#A1201A; --warn:#A16207; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 "IBM Plex Sans Thai", system-ui, sans-serif; }
+  main { max-width:1440px; margin:0 auto; padding:20px 16px 48px; display:flex; flex-direction:column; gap:16px; }
+  h1 { font-size:26px; margin:0; }
+  .mu { color:var(--mu); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .btn { min-height:40px; padding:6px 14px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--ink);
+         font:inherit; font-weight:600; cursor:pointer; }
+  .btn:hover { border-color:#BDB8AE; }
+  .btn.pri { background:var(--acc); border-color:var(--acc); color:#fff; }
+  .btn.sm { min-height:32px; padding:2px 10px; font-size:14px; }
+  .btn:disabled { opacity:.45; cursor:default; }
+  .grid { display:grid; grid-template-columns: minmax(0, 3fr) minmax(300px, 1fr); gap:16px; align-items:start; }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
+  .stage { position:relative; background:#1C1E21; border-radius:12px; overflow:hidden; touch-action:none; user-select:none; }
+  .stage canvas { display:block; width:100%; height:auto; cursor:grab; }
+  .chip { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px; background:#EFEDE8; font-size:14px; font-weight:600; }
+  .dot { width:9px; height:9px; border-radius:50%; background:#A3A6AD; }
+  .dot.ok { background:var(--ok); } .dot.bad { background:var(--bad); } .dot.warn { background:#E0A100; }
+  .scale { background:#15171A; color:#9EF0B0; border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:4px; }
+  .scale .lcd { font: 700 44px/1.1 ui-monospace, "Cascadia Mono", Consolas, monospace; text-align:right; letter-spacing:1px; }
+  .scale .sub { display:flex; justify-content:space-between; color:#7FA889; font-size:14px; }
+  .tools { display:flex; flex-direction:column; gap:8px; max-height:560px; overflow:auto; }
+  .tool { display:grid; grid-template-columns:56px 1fr auto; gap:10px; align-items:center; padding:8px; border:1px solid var(--line); border-radius:12px; }
+  .tool.on { border-color:var(--acc); background:#FFF7F2; }
+  .tool img { width:56px; height:56px; object-fit:contain; background:#2A2C30; border-radius:8px; }
+  .tool .nm { font-weight:700; }
+  .tool .meta { font-size:13px; color:var(--mu); }
+  .tool .tag { font-size:12px; padding:1px 8px; border-radius:999px; background:#EFEDE8; margin-left:4px; }
+  .tool .tag.loan { background:#FDECC8; color:#7A4A00; }
+  .tool label { font-size:13px; display:flex; gap:4px; align-items:center; cursor:pointer; }
+  .msg { min-height:22px; font-weight:600; font-size:15px; }
+  .msg.bad { color:var(--bad); } .msg.ok { color:var(--ok); }
+  .kiosk { width:100%; height:760px; border:1px solid var(--line); border-radius:12px; background:#fff; }
+  kbd { font:600 12px ui-monospace, monospace; background:#EFEDE8; border-radius:4px; padding:1px 5px; }
+  a { color:var(--acc); }
+</style>
+</head>
+<body>
+<main>
+  <div class="row" style="justify-content:space-between">
+    <div>
+      <h1>ถาดจำลอง</h1>
+      <div class="mu">ฮาร์ดแวร์จำลองสำหรับสาธิต · ภาพถาดนี้ถูกส่งเป็น "กล้อง" ให้ AI (CiRA CORE) ตรวจจริง และน้ำหนักถูกส่งเป็น "ตาชั่ง" ให้ KitCheck</div>
+    </div>
+    <div class="row">
+      <span class="chip" title="ภาพถาดที่ส่งเป็นกล้อง"><span class="dot" id="camDot"></span><span id="camTxt">กล้องจำลอง</span></span>
+      <span class="chip" title="ผลจาก CiRA CORE"><span class="dot" id="aiDot"></span><span id="aiTxt">AI</span></span>
+      <a class="btn" href="/kiosk" target="kitcheck_kiosk">เปิดหน้าตู้ยืม-คืน ↗</a>
+      <a class="btn" href="/">หน้าหลัก</a>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="card" style="display:flex;flex-direction:column;gap:10px">
+      <div class="row" style="justify-content:space-between">
+        <b>ถาด (มุมมองกล้อง)</b>
+        <span class="mu" style="font-size:14px">ลากเพื่อย้าย · หมุนด้วยลูกกลิ้งเมาส์หรือ <kbd>R</kbd> · ดับเบิลคลิกเพื่อยกออก</span>
+      </div>
+      <div class="stage"><canvas id="view" width="1280" height="720" aria-label="ถาดจำลอง ลากอุปกรณ์เพื่อจัดวาง"></canvas></div>
+      <div class="row">
+        <button class="btn sm" id="rotL" type="button" aria-label="หมุนซ้าย">⟲ หมุน</button>
+        <button class="btn sm" id="rotR" type="button" aria-label="หมุนขวา">⟳ หมุน</button>
+        <button class="btn sm" id="liftSel" type="button">ยกชิ้นที่เลือกออก</button>
+        <button class="btn sm" id="clearAll" type="button">ยกออกหมด</button>
+        <label class="row" style="gap:6px;margin-left:auto;font-size:14px;cursor:pointer">
+          <input type="checkbox" id="showAI" checked style="width:18px;height:18px;accent-color:#C2410C"> แสดงกรอบที่ AI เห็น
+        </label>
+      </div>
+      <div class="msg" id="msg" role="status"></div>
+    </section>
+
+    <aside style="display:flex;flex-direction:column;gap:16px">
+      <section class="scale card" style="border:0" aria-label="ตาชั่งจำลอง">
+        <div class="sub"><span>ตาชั่งจำลอง</span><span id="stable">—</span></div>
+        <div class="lcd" id="lcd" aria-live="polite">0 g</div>
+        <div class="sub"><span id="scaleNote">ส่งค่าให้ KitCheck ทุก 0.4 วินาที</span><span id="scaleSent"></span></div>
+      </section>
+      <section class="card" style="display:flex;flex-direction:column;gap:10px">
+        <div class="row" style="justify-content:space-between"><b>อุปกรณ์ (ติด QR แล้ว)</b><span class="mu" style="font-size:13px" id="toolCount"></span></div>
+        <div class="tools" id="tools"></div>
+        <div class="mu" style="font-size:12px">ภาพอุปกรณ์ตัดจากชุดข้อมูล Roboflow (CC BY 4.0) · น้ำหนักแต่ละชิ้นต่างจากค่ามาตรฐานเล็กน้อยเหมือนของจริง</div>
+      </section>
+    </aside>
+  </div>
+
+  <section class="card" style="display:flex;flex-direction:column;gap:10px">
+    <label class="row" style="gap:8px;cursor:pointer"><input type="checkbox" id="showKiosk" style="width:18px;height:18px;accent-color:#C2410C">
+      <b>แสดงหน้าตู้ยืม-คืนในหน้านี้</b> <span class="mu" style="font-size:14px">· สำหรับสาธิตบนจอเดียว</span></label>
+    <div id="kioskBox"></div>
+  </section>
+</main>
+
+<script>
+'use strict';
+var TOKEN = null; try { TOKEN = localStorage.getItem('kitcheck_token'); } catch (e) {}
+var W = 1280, H = 720;
+var TRAY = { x: 90, y: 60, w: 1100, h: 600, r: 26 };            // the black pad, in camera pixels
+var STICKER = 80;                                                  // QR sticker side, camera pixels
+var FOREIGN = { qr: 'foreign', type: 'foreign', type_name: 'ไม้บรรทัดเหล็ก', weight: 120, foreign: true };
+
+var view = document.getElementById('view'), vctx = view.getContext('2d');
+var scene = document.createElement('canvas'); scene.width = W; scene.height = H;    // what the "camera" sends
+var sctx = scene.getContext('2d');
+var bg = document.createElement('canvas'); bg.width = W; bg.height = H;
+var msgEl = document.getElementById('msg');
+var SPR = {}, IMG = {}, QRI = {};       // sprite manifest, sprite images, QR sticker images
+var TOOLS = [], items = [], sel = null, drag = null, aiDets = [], lastAI = null, scanWaiting = false;
+var scaleState = { shown: 0, target: 0, changedAt: 0 };
+
+function say(t, cls) { msgEl.textContent = t || ''; msgEl.className = 'msg' + (cls ? ' ' + cls : ''); }
+function api(method, path, body, raw) {
+  var h = { 'Authorization': 'Bearer ' + TOKEN };
+  if (!raw) h['Content-Type'] = 'application/json';
+  return fetch(path, { method: method, headers: h, body: raw ? body : (body ? JSON.stringify(body) : undefined), cache: 'no-store' })
+    .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) {
+      if (!r.ok) { var e = new Error(j.error || ('ผิดพลาด ' + r.status)); e.status = r.status; throw e; } return j; }); });
+}
+function loadImg(src) { return new Promise(function (ok, no) { var i = new Image(); i.onload = function () { ok(i); }; i.onerror = no; i.src = src; }); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function hash(s) { var h = 2166136261; for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; }
+
+/* ---------- the tray background (table + black rubber pad), drawn once ---------- */
+function drawBackground() {
+  var g = bg.getContext('2d');
+  var tg = g.createLinearGradient(0, 0, W, H); tg.addColorStop(0, '#B9B3A8'); tg.addColorStop(1, '#A39C90');
+  g.fillStyle = tg; g.fillRect(0, 0, W, H);
+  for (var i = 0; i < 2600; i++) { g.fillStyle = 'rgba(0,0,0,' + (Math.random() * 0.05) + ')'; g.fillRect(Math.random() * W, Math.random() * H, 2, 2); }
+  g.save(); g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = 24; g.shadowOffsetY = 8;
+  roundRect(g, TRAY.x, TRAY.y, TRAY.w, TRAY.h, TRAY.r); g.fillStyle = '#1A1B1D'; g.fill(); g.restore();
+  var pg = g.createRadialGradient(W * 0.45, H * 0.35, 80, W / 2, H / 2, 760);  // light falling from the top left
+  pg.addColorStop(0, '#2C2E31'); pg.addColorStop(1, '#141517');
+  roundRect(g, TRAY.x + 10, TRAY.y + 10, TRAY.w - 20, TRAY.h - 20, TRAY.r - 8); g.fillStyle = pg; g.fill();
+  g.save(); roundRect(g, TRAY.x + 10, TRAY.y + 10, TRAY.w - 20, TRAY.h - 20, TRAY.r - 8); g.clip();
+  for (var j = 0; j < 9000; j++) { g.fillStyle = 'rgba(255,255,255,' + (Math.random() * 0.025) + ')'; g.fillRect(TRAY.x + Math.random() * TRAY.w, TRAY.y + Math.random() * TRAY.h, 1.5, 1.5); }
+  g.restore();
+}
+function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+/* ---------- tools ---------- */
+function spriteFor(t) {
+  if (t.foreign) return 'foreign_ruler';
+  var same = TOOLS.filter(function (o) { return o.type === t.type; });
+  var k = same.indexOf(t) % 2 === 0 ? '_a' : '_b';
+  return SPR[t.type + k] ? t.type + k : null;
+}
+function dims(it) {
+  var s = SPR[it.sprite]; if (!s) return { w: 260, h: 90, k: 1 };
+  var k = s.length / Math.max(s.w, s.h); return { w: s.w * k, h: s.h * k, k: k };
+}
+function drawItem(g, it, plain) {
+  var d = dims(it), s = SPR[it.sprite];
+  g.save(); g.translate(it.x, it.y); g.rotate(it.rot);
+  g.shadowColor = 'rgba(0,0,0,.55)'; g.shadowBlur = 14; g.shadowOffsetX = 4; g.shadowOffsetY = 6;
+  if (IMG[it.sprite]) g.drawImage(IMG[it.sprite], -d.w / 2, -d.h / 2, d.w, d.h);
+  else { g.fillStyle = '#8A8E95'; roundRect(g, -d.w / 2, -d.h / 2, d.w, d.h, 14); g.fill(); }
+  g.shadowColor = 'transparent';
+  if (!it.tool.foreign && s) {                         // the QR sticker, stuck on the thickest part of the tool
+    var sx = (s.sticker[0] - 0.5) * d.w, sy = (s.sticker[1] - 0.5) * d.h, q = QRI[it.tool.qr];
+    g.save(); g.translate(sx, sy); g.rotate(-it.rot * 0.15);
+    g.fillStyle = '#fff'; g.fillRect(-STICKER / 2 - 4, -STICKER / 2 - 4, STICKER + 8, STICKER + 8);
+    if (q) { g.imageSmoothingEnabled = false; g.drawImage(q, -STICKER / 2, -STICKER / 2, STICKER, STICKER); g.imageSmoothingEnabled = true; }
+    if (it.damaged) {                                  // scuffed / covered sticker: the AI cannot read it
+      g.fillStyle = 'rgba(120,110,95,.86)'; g.fillRect(-STICKER / 2 - 4, -STICKER * 0.12, STICKER + 8, STICKER * 0.62);
+      g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = 3;
+      for (var i = 0; i < 5; i++) { g.beginPath(); g.moveTo(-STICKER / 2 + i * 18, -STICKER / 2); g.lineTo(-STICKER / 2 + i * 18 + 26, STICKER / 2); g.stroke(); }
+    }
+    g.restore();
+  }
+  if (!plain && it === sel) { g.strokeStyle = '#FFC857'; g.lineWidth = 3; g.setLineDash([10, 8]); g.strokeRect(-d.w / 2 - 6, -d.h / 2 - 6, d.w + 12, d.h + 12); }
+  g.restore();
+}
+function renderScene() {
+  sctx.drawImage(bg, 0, 0);
+  items.forEach(function (it) { drawItem(sctx, it, true); });
+}
+function renderView() {
+  vctx.drawImage(bg, 0, 0);
+  items.forEach(function (it) { drawItem(vctx, it, false); });
+  if (document.getElementById('showAI').checked) drawAI();
+}
+function drawAI() {
+  aiDets.forEach(function (d) {
+    var b = d.box, x = b[0] * W, y = b[1] * H, w = b[2] * W, h = b[3] * H, col = d.qr ? '#3BD16F' : '#FFC857';
+    vctx.lineWidth = 4; vctx.strokeStyle = col; vctx.strokeRect(x, y, w, h);
+    var label = (d.type_name || d.type) + ' ' + Math.round((d.conf || 0) * 100) + '%' +
+      (d.qr ? ' · ' + d.qr : (scanWaiting ? ' · อ่าน QR ไม่ได้' : ' · QR อ่านตอนสแกน'));
+    vctx.font = '600 20px system-ui, sans-serif'; var tw = vctx.measureText(label).width;
+    vctx.fillStyle = col; vctx.fillRect(x, Math.max(0, y - 30), tw + 14, 30);
+    vctx.fillStyle = '#111'; vctx.fillText(label, x + 7, Math.max(21, y - 9));
+  });
+}
+
+function onTray(it) { return it.x > TRAY.x && it.x < TRAY.x + TRAY.w && it.y > TRAY.y && it.y < TRAY.y + TRAY.h; }
+function freeSpot(it) {
+  var d = dims(it), best = null;
+  for (var tries = 0; tries < 60; tries++) {
+    var x = TRAY.x + 40 + d.w / 2 + Math.random() * Math.max(1, TRAY.w - 80 - d.w);
+    var y = TRAY.y + 40 + d.h / 2 + Math.random() * Math.max(1, TRAY.h - 80 - d.h);
+    var gap = Math.min.apply(null, items.map(function (o) { return Math.hypot(o.x - x, o.y - y); }).concat([1e9]));
+    if (!best || gap > best.gap) best = { x: x, y: y, gap: gap };
+  }
+  return best;
+}
+function place(tool) {
+  if (items.some(function (i) { return i.tool.qr === tool.qr; })) return;
+  var it = { tool: tool, sprite: spriteFor(tool), rot: (hash(tool.qr) - 0.5) * 0.9, damaged: false, x: 0, y: 0 };
+  var p = freeSpot(it); it.x = p.x; it.y = p.y;
+  items.push(it); sel = it; changed();
+}
+function lift(qr) { items = items.filter(function (i) { return i.tool.qr !== qr; }); if (sel && sel.tool.qr === qr) sel = null; changed(); }
+function changed() { scaleState.changedAt = performance.now(); renderTools(); }
+
+/* ---------- pointer: drag, rotate, lift ---------- */
+function pt(ev) { var r = view.getBoundingClientRect(); return { x: (ev.clientX - r.left) * W / r.width, y: (ev.clientY - r.top) * H / r.height }; }
+function hit(p) {
+  for (var i = items.length - 1; i >= 0; i--) {
+    var it = items[i], d = dims(it), c = Math.cos(-it.rot), s = Math.sin(-it.rot);
+    var lx = (p.x - it.x) * c - (p.y - it.y) * s, ly = (p.x - it.x) * s + (p.y - it.y) * c;
+    if (Math.abs(lx) <= d.w / 2 && Math.abs(ly) <= d.h / 2) return it;
+  }
+  return null;
+}
+view.addEventListener('pointerdown', function (ev) {
+  var p = pt(ev), it = hit(p); sel = it;
+  if (it) { items.splice(items.indexOf(it), 1); items.push(it); drag = { it: it, dx: p.x - it.x, dy: p.y - it.y }; view.setPointerCapture(ev.pointerId); view.style.cursor = 'grabbing'; }
+  renderTools();
+});
+view.addEventListener('pointermove', function (ev) {
+  if (!drag) { view.style.cursor = hit(pt(ev)) ? 'grab' : 'default'; return; }
+  var p = pt(ev); drag.it.x = Math.max(0, Math.min(W, p.x - drag.dx)); drag.it.y = Math.max(0, Math.min(H, p.y - drag.dy));
+});
+function endDrag() {
+  if (!drag) return;
+  var it = drag.it; drag = null; view.style.cursor = 'grab';
+  if (!onTray(it)) { lift(it.tool.qr); say('วางนอกถาด = ยกออกจากถาด'); } else changed();
+}
+view.addEventListener('pointerup', endDrag); view.addEventListener('pointercancel', endDrag);
+view.addEventListener('dblclick', function (ev) { var it = hit(pt(ev)); if (it) lift(it.tool.qr); });
+view.addEventListener('wheel', function (ev) { var it = hit(pt(ev)) || sel; if (!it) return; ev.preventDefault(); it.rot += (ev.deltaY > 0 ? 1 : -1) * Math.PI / 24; }, { passive: false });
+function rotSel(dir) { if (sel) sel.rot += dir * Math.PI / 12; }
+document.getElementById('rotL').onclick = function () { rotSel(-1); };
+document.getElementById('rotR').onclick = function () { rotSel(1); };
+document.getElementById('liftSel').onclick = function () { if (sel) lift(sel.tool.qr); };
+document.getElementById('clearAll').onclick = function () { items = []; sel = null; changed(); };
+document.addEventListener('keydown', function (ev) {
+  if (ev.target.tagName === 'INPUT') return;
+  if (ev.key === 'r' || ev.key === 'R') rotSel(ev.shiftKey ? -1 : 1);
+  if ((ev.key === 'Delete' || ev.key === 'Backspace') && sel) { ev.preventDefault(); lift(sel.tool.qr); }
+});
+
+/* ---------- tool list ---------- */
+function renderTools() {
+  var all = TOOLS.concat([FOREIGN]);
+  document.getElementById('toolCount').textContent = items.length + ' ชิ้นบนถาด';
+  document.getElementById('tools').innerHTML = all.map(function (t) {
+    var it = items.find(function (i) { return i.tool.qr === t.qr; }), spr = spriteFor(t);
+    return '<div class="tool' + (it ? ' on' : '') + '">' +
+      (spr ? '<img alt="" src="/sim/' + spr + '.png">' : '<span></span>') +
+      '<div><div class="nm">' + esc(t.type_name) + (t.foreign ? '<span class="tag">ไม่ได้ลงทะเบียน</span>' : '') +
+      (t.holder ? '<span class="tag loan">ยืมโดย ' + esc(t.holder) + '</span>' : '') + '</div>' +
+      '<div class="meta">' + (t.foreign ? 'ไม่มี QR' : esc(t.qr)) + ' · ' + Math.round(realWeight(t)) + ' g</div>' +
+      (!t.foreign && it ? '<label><input type="checkbox" data-dmg="' + esc(t.qr) + '"' + (it.damaged ? ' checked' : '') + '> QR เสีย/ถูกบัง</label>' : '') +
+      '</div>' +
+      '<button class="btn sm' + (it ? '' : ' pri') + '" type="button" data-t="' + esc(t.qr) + '">' + (it ? 'ยกออก' : 'วางบนถาด') + '</button></div>';
+  }).join('');
+}
+document.getElementById('tools').addEventListener('click', function (ev) {
+  var b = ev.target.closest('button[data-t]'); if (!b) return;
+  var qr = b.getAttribute('data-t'), t = TOOLS.concat([FOREIGN]).find(function (o) { return o.qr === qr; });
+  if (items.some(function (i) { return i.tool.qr === qr; })) lift(qr); else if (t) place(t);
+});
+document.getElementById('tools').addEventListener('change', function (ev) {
+  var qr = ev.target.getAttribute('data-dmg'); if (!qr) return;
+  var it = items.find(function (i) { return i.tool.qr === qr; }); if (it) it.damaged = ev.target.checked;
+});
+
+/* ---------- the scale ---------- */
+function realWeight(t) { return (t.weight || 0) + (t.foreign ? 0 : (hash(t.qr + 'w') - 0.5) * 8); }   // each piece is a few g off
+function scaleTick() {
+  var target = items.reduce(function (s, it) { return s + realWeight(it.tool); }, 0);
+  var since = performance.now() - scaleState.changedAt, stable = since > 1400 && !drag;
+  var g = stable ? target + (Math.random() - 0.5) * 0.6
+                 : target + (Math.random() - 0.5) * Math.max(4, target * 0.04) * Math.max(0.2, 1 - since / 1400);
+  if (Math.abs(g) < 0.5) g = 0;
+  document.getElementById('lcd').textContent = g.toLocaleString('th-TH', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' g';
+  var st = document.getElementById('stable'); st.textContent = stable ? '● นิ่ง' : '○ กำลังชั่ง…'; st.style.color = stable ? '#9EF0B0' : '#F5C26B';
+  api('POST', '/api/virtual/scale', { grams: Math.round(g * 10) / 10, stable: stable })
+    .then(function () { document.getElementById('scaleSent').textContent = 'ส่งแล้ว ✓'; })
+    .catch(function (e) { document.getElementById('scaleSent').textContent = 'ส่งไม่ได้'; if (e.status === 409) say(e.message, 'bad'); });
+}
+
+/* ---------- the camera: the tray picture goes to KitCheck as JPEG frames ---------- */
+var sending = false, sent = 0, fpsAt = performance.now();
+function sendFrame() {
+  if (sending) return;
+  sending = true; renderScene();
+  scene.toBlob(function (b) {
+    api('POST', '/api/virtual/frame', b, true).then(function () { sent++; setDot('cam', 'ok'); })
+      .catch(function (e) { setDot('cam', 'bad'); document.getElementById('camTxt').textContent = 'กล้องจำลอง: ' + e.message; })
+      .then(function () { sending = false; });
+  }, 'image/jpeg', 0.88);
+}
+function setDot(k, cls) { document.getElementById(k + 'Dot').className = 'dot ' + cls; }
+setInterval(function () {
+  var el = (performance.now() - fpsAt) / 1000; fpsAt = performance.now();
+  document.getElementById('camTxt').textContent = 'กล้องจำลอง ' + (sent / el).toFixed(1) + ' fps'; sent = 0;
+}, 2000);
+
+/* ---------- what the AI saw ---------- */
+function pollAI() {
+  api('GET', '/api/camera/live').then(function (j) {
+    aiDets = j.detections || [];
+    scanWaiting = !!(j.qr_read || j.scan_waiting);
+    var age = j.ai_age_s;
+    if (age == null) { setDot('ai', 'bad'); document.getElementById('aiTxt').textContent = 'AI ยังไม่ส่งผล'; }
+    else if (age < 3) { setDot('ai', 'ok'); document.getElementById('aiTxt').textContent = 'AI (CiRA) ออนไลน์ · เห็น ' + aiDets.length + ' ชิ้น'; }
+    else { setDot('ai', 'warn'); document.getElementById('aiTxt').textContent = 'AI เงียบไป ' + Math.round(age) + ' วินาที'; }
+  }).catch(function () { setDot('ai', 'bad'); });
+}
+function refreshTools() {
+  return api('GET', '/api/virtual/info').then(function (j) {
+    if (!j.virtual) say('KitCheck ยังไม่ได้เปิดโหมดฮาร์ดแวร์จำลอง (ตั้ง KITCHECK_VIRTUAL=1 แล้วเปิดใหม่)', 'bad');
+    var byQr = {}; TOOLS.forEach(function (t) { byQr[t.qr] = t; });
+    TOOLS = j.tools.map(function (t) { return byQr[t.qr] ? Object.assign(byQr[t.qr], t) : t; });
+    items = items.filter(function (i) { return i.tool.foreign || TOOLS.indexOf(i.tool) >= 0; });
+    return Promise.all(TOOLS.map(function (t) {
+      if (QRI[t.qr]) return null;
+      return fetch('/api/virtual/qr/' + encodeURIComponent(t.qr) + '.png', { headers: { 'Authorization': 'Bearer ' + TOKEN } })
+        .then(function (r) { return r.blob(); }).then(createImageBitmap).then(function (b) { QRI[t.qr] = b; });
+    })).then(renderTools);
+  });
+}
+
+/* ---------- kiosk side by side ---------- */
+document.getElementById('showKiosk').onchange = function (ev) {
+  document.getElementById('kioskBox').innerHTML = ev.target.checked ? '<iframe class="kiosk" src="/kiosk" title="หน้าตู้ยืม-คืน"></iframe>' : '';
+};
+
+function frameLoop() { renderView(); requestAnimationFrame(frameLoop); }
+
+/* Timers that keep running when this tab is in the background or minimised: the page's own setInterval
+   drops to 1/s there (and to 1/min after 5 min), so the "camera" and the scale went stale and a borrow/return
+   round got no photo and no weight. A worker's timers are not throttled like that. */
+var every = (function () {
+  var jobs = [], w = null;
+  try {
+    w = new Worker(URL.createObjectURL(new Blob(
+      ['onmessage=function(e){setInterval(function(){postMessage(e.data.id)},e.data.ms)}'], { type: 'text/javascript' })));
+    w.onmessage = function (e) { try { jobs[e.data](); } catch (err) { console.error(err); } };
+  } catch (e) { w = null; }
+  return function (fn, ms) {
+    if (!w) return setInterval(fn, ms);
+    jobs.push(fn);
+    w.postMessage({ id: jobs.length - 1, ms: ms });
+  };
+})();
+
+if (!TOKEN) {
+  document.querySelector('main').innerHTML = '<div class="card">กรุณา <a href="/">เข้าสู่ระบบ KitCheck</a> ก่อน แล้วกลับมาที่หน้านี้</div>';
+} else {
+  drawBackground();
+  fetch('/sim/sprites.json').then(function (r) { return r.json(); }).then(function (m) {
+    SPR = m;
+    return Promise.all(Object.keys(m).map(function (k) { return loadImg('/sim/' + m[k].file).then(function (i) { IMG[k] = i; }); }));
+  }).then(refreshTools).then(function () {
+    frameLoop();
+    every(sendFrame, 125);             // ~8 frames/s to the "camera", also with the tab in the background
+    every(scaleTick, 400);
+    setInterval(pollAI, 400);
+    setInterval(function () { refreshTools().catch(function () {}); }, 5000);
+  }).catch(function (e) { say(e.message, 'bad'); });
+}
+</script>
+</body>
+</html>

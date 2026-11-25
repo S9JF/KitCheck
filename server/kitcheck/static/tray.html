@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ปรับกรอบถาด · KitCheck</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#F4F2EE; --card:#FFFFFF; --ink:#1C1E21; --mu:#6B6F76; --line:#E2DFD8; --acc:#C2410C; --ok:#1F7A45; --bad:#A1201A; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 "IBM Plex Sans Thai", system-ui, sans-serif; }
+  main { max-width:1200px; margin:0 auto; padding:24px 16px 48px; display:flex; flex-direction:column; gap:16px; }
+  h1 { font-size:28px; margin:0; }
+  .mu { color:var(--mu); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .btn { min-height:44px; padding:8px 16px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--ink);
+         font:inherit; font-weight:600; cursor:pointer; }
+  .btn:hover { border-color:#BDB8AE; }
+  .btn.pri { background:var(--acc); border-color:var(--acc); color:#fff; }
+  .btn:disabled { opacity:.5; cursor:default; }
+  .grid { display:grid; grid-template-columns: 3fr 2fr; gap:16px; align-items:start; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .stage { position:relative; background:#1C1E21; border-radius:12px; overflow:hidden; touch-action:none; user-select:none; }
+  .stage canvas { display:block; width:100%; height:auto; }
+  .preview { background:#1C1E21; border-radius:12px; overflow:hidden; aspect-ratio:16/10; display:flex; align-items:center; justify-content:center; color:#A3A6AD; }
+  .preview img { width:100%; height:100%; object-fit:contain; display:block; }
+  .msg { min-height:24px; font-weight:600; }
+  .msg.ok { color:var(--ok); } .msg.bad { color:var(--bad); }
+  ol { margin:0; padding-left:20px; }
+  a { color:var(--acc); }
+</style>
+</head>
+<body>
+<main>
+  <div class="row" style="justify-content:space-between">
+    <div><h1>ปรับกรอบถาด</h1><div class="mu">กำหนดมุมทั้ง 4 ของถาด ระบบจะดัดภาพให้ถาดตั้งตรงเสมอ ไม่ว่ากล้องจะเอียงแค่ไหน</div></div>
+    <a class="btn" href="/">กลับหน้าหลัก</a>
+  </div>
+
+  <div class="grid">
+    <section class="card" style="display:flex;flex-direction:column;gap:12px">
+      <div class="row" style="justify-content:space-between">
+        <b>ภาพจากกล้อง · ลากจุดไปวางที่มุมถาด</b>
+        <span class="mu" style="font-size:14px">1 บนซ้าย · 2 บนขวา · 3 ล่างขวา · 4 ล่างซ้าย</span>
+      </div>
+      <div class="stage" id="stage"><canvas id="cv" width="1280" height="720" aria-label="ภาพจากกล้องพร้อมมุมถาดที่ลากได้"></canvas></div>
+      <div class="row">
+        <button class="btn" id="snap" type="button">ถ่ายภาพใหม่</button>
+        <button class="btn" id="auto" type="button">หาถาดอัตโนมัติ</button>
+        <button class="btn pri" id="save" type="button">บันทึกกรอบถาด</button>
+        <button class="btn" id="clear" type="button" style="margin-left:auto">ล้างกรอบ</button>
+      </div>
+      <div class="msg" id="msg" role="status"></div>
+    </section>
+
+    <section class="card" style="display:flex;flex-direction:column;gap:12px">
+      <b>ผลลัพธ์ที่บันทึกแล้ว · ภาพถาดที่ดัดตรง</b>
+      <div class="preview" id="pv"><span>ยังไม่ได้บันทึกกรอบถาด</span></div>
+      <label class="row" style="gap:10px;cursor:pointer">
+        <input type="checkbox" id="enh" style="width:22px;height:22px;accent-color:#C2410C">
+        <span><b>ทำให้ถาดดำเด่น</b> <span class="mu" style="font-size:14px">· เกลี่ยแสงให้เท่ากันทั้งแผ่น ดันถาดให้ดำ ของที่วางจะเด่นขึ้น (มีผลกับภาพที่คนเห็น ไม่มีผลกับ AI)</span></span>
+      </label>
+      <ol class="mu" style="font-size:14px">
+        <li>วางถาดเปล่าให้อยู่ในภาพทั้งแผ่น แล้วกด <b>หาถาดอัตโนมัติ</b></li>
+        <li>ถ้ามุมไหนคลาด ลากจุดไปวางที่มุมถาดให้ตรง</li>
+        <li>กด <b>บันทึกกรอบถาด</b> ภาพด้านบนนี้จะแสดงถาดที่ดัดตรงแล้ว</li>
+        <li>ขยับกล้องหรือถาดเมื่อไหร่ ให้กลับมาทำใหม่ที่หน้านี้</li>
+      </ol>
+    </section>
+  </div>
+</main>
+<script>
+'use strict';
+var TOKEN = null; try { TOKEN = localStorage.getItem('kitcheck_token'); } catch (e) {}
+var cv = document.getElementById('cv'), ctx = cv.getContext('2d'), msgEl = document.getElementById('msg');
+var img = null, frame = [1280, 720], quad = null, drag = -1, dirty = false;
+var DEFAULT = [[0.2, 0.2], [0.8, 0.2], [0.8, 0.8], [0.2, 0.8]];
+
+function say(t, cls) { msgEl.textContent = t || ''; msgEl.className = 'msg' + (cls ? ' ' + cls : ''); }
+function api(method, path, body) {
+  return fetch(path, { method: method, headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+                       body: body ? JSON.stringify(body) : undefined, cache: 'no-store' })
+    .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) {
+      if (!r.ok) throw new Error(j.error || ('ผิดพลาด ' + r.status)); return j; }); });
+}
+function blob(path) {
+  return fetch(path, { headers: { 'Authorization': 'Bearer ' + TOKEN }, cache: 'no-store' }).then(function (r) {
+    if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { throw new Error(j.error || ('ผิดพลาด ' + r.status)); });
+    return r.blob(); });
+}
+
+function draw() {
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  if (img) ctx.drawImage(img, 0, 0, cv.width, cv.height);
+  if (!quad) return;
+  var W = cv.width, H = cv.height, s = W / 1280;
+  ctx.beginPath();
+  quad.forEach(function (p, i) { var x = p[0] * W, y = p[1] * H; if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); });
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255, 200, 87, 0.12)'; ctx.fill();
+  ctx.lineWidth = 4 * s; ctx.strokeStyle = '#FFC857'; ctx.stroke();
+  quad.forEach(function (p, i) {
+    var x = p[0] * W, y = p[1] * H;
+    ctx.beginPath(); ctx.arc(x, y, 18 * s, 0, Math.PI * 2);
+    ctx.fillStyle = i === drag ? '#C2410C' : '#FFC857'; ctx.fill();
+    ctx.lineWidth = 3 * s; ctx.strokeStyle = '#1C1E21'; ctx.stroke();
+    ctx.fillStyle = i === drag ? '#fff' : '#1C1E21'; ctx.font = '700 ' + Math.round(20 * s) + 'px system-ui';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(i + 1), x, y + 1);
+  });
+}
+
+function pos(ev) {
+  var r = cv.getBoundingClientRect();
+  return [Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (ev.clientY - r.top) / r.height))];
+}
+cv.addEventListener('pointerdown', function (ev) {
+  if (!quad) return;
+  var p = pos(ev), r = cv.getBoundingClientRect(), best = -1, bd = 1e9;
+  quad.forEach(function (q, i) { var dx = (q[0] - p[0]) * r.width, dy = (q[1] - p[1]) * r.height, d = dx * dx + dy * dy; if (d < bd) { bd = d; best = i; } });
+  if (bd > 48 * 48) return;  // only grab a corner when pressing near it
+  drag = best; cv.setPointerCapture(ev.pointerId); draw();
+});
+cv.addEventListener('pointermove', function (ev) { if (drag < 0) return; quad[drag] = pos(ev); dirty = true; draw(); });
+function endDrag() { if (drag >= 0) { drag = -1; draw(); if (dirty) say('ยังไม่ได้บันทึก'); } }
+cv.addEventListener('pointerup', endDrag); cv.addEventListener('pointercancel', endDrag);
+
+function snap() {
+  say('กำลังถ่ายภาพ…');
+  return blob('/api/camera/snapshot').then(createImageBitmap).then(function (b) {
+    img = b; frame = [b.width, b.height]; cv.width = b.width; cv.height = b.height; draw(); say('');
+  }).catch(function (e) { say(e.message, 'bad'); });
+}
+function auto() {
+  say('กำลังหาถาด…');
+  return api('POST', '/api/camera/tray/auto').then(function (j) {
+    quad = j.quad; frame = j.frame; dirty = true; draw();
+    return snap().then(function () { say('เจอถาดแล้ว ตรวจมุมให้ตรงแล้วกดบันทึก', 'ok'); });
+  }).catch(function (e) { say(e.message, 'bad'); });
+}
+function save() {
+  if (!quad) return;
+  api('POST', '/api/camera/tray', { quad: quad, frame: frame }).then(function () {
+    dirty = false; say('บันทึกแล้ว · หน้าเว็บและจอตู้จะเห็นถาดที่ดัดตรงทันที', 'ok'); preview();
+  }).catch(function (e) { say(e.message, 'bad'); });
+}
+function clearTray() {
+  if (!confirm('ล้างกรอบถาด แล้วกลับไปใช้กรอบตัดแบบเดิม?')) return;
+  api('POST', '/api/camera/tray', { clear: true }).then(function () {
+    quad = DEFAULT.map(function (p) { return p.slice(); }); draw(); say('ล้างแล้ว', 'ok'); preview();
+  }).catch(function (e) { say(e.message, 'bad'); });
+}
+
+var pvUrl = null, pvTimer = null;
+function preview() {
+  clearTimeout(pvTimer);
+  blob('/api/camera/small?w=720&q=80').then(function (b) {
+    if (pvUrl) URL.revokeObjectURL(pvUrl);
+    pvUrl = URL.createObjectURL(b);
+    document.getElementById('pv').innerHTML = '<img alt="ภาพถาดที่ดัดตรงแล้ว" src="' + pvUrl + '">';
+  }).catch(function () {}).then(function () { if (!document.hidden) pvTimer = setTimeout(preview, 1500); });
+}
+document.addEventListener('visibilitychange', function () { if (!document.hidden) preview(); });
+
+var enh = document.getElementById('enh');
+enh.onchange = function () {
+  api('POST', '/api/camera/tray', { enhance: enh.checked }).then(function () {
+    say(enh.checked ? 'เปิดการปรับสีแล้ว' : 'ปิดการปรับสีแล้ว', 'ok'); preview();
+  }).catch(function (e) { enh.checked = !enh.checked; say(e.message, 'bad'); });
+};
+document.getElementById('snap').onclick = snap;
+document.getElementById('auto').onclick = auto;
+document.getElementById('save').onclick = save;
+document.getElementById('clear').onclick = clearTray;
+
+if (!TOKEN) {
+  document.querySelector('main').innerHTML = '<div class="card">กรุณา <a href="/">เข้าสู่ระบบ</a> ด้วยบัญชีผู้ดูแลระบบก่อน แล้วกลับมาที่หน้านี้</div>';
+} else {
+  api('GET', '/api/camera/tray').then(function (j) {
+    if (j.tray) { quad = j.tray.quad; frame = j.tray.frame; enh.checked = j.tray.enhance !== false; }
+    else { quad = DEFAULT.map(function (p) { return p.slice(); }); enh.checked = true; }
+    return snap();
+  }).then(function () { if (quad) preview(); }).catch(function (e) { say(e.message, 'bad'); });
+}
+window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+</script>
+</body>
+</html>
