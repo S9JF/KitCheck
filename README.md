@@ -60,11 +60,6 @@ pio run -t upload
 - ตั้ง WiFi ได้จากจอ: แตะชิป WiFi มุมขวาบน แล้วใส่รหัสเจ้าหน้าที่ (`KIOSK_PIN`)
 - ต่อ hotspot ของโน้ตบุ๊ก Windows แล้วจอจะใช้ KitCheck บนโน้ตบุ๊กเอง (`192.168.137.1:8080`)
 
-## ไฟล์ลับ (ห้าม commit)
-
-`server/local.env`, `server/ipcam.env`, `kiosk-esp32/include/secrets.h`, `line.env`, `station.env`
-และฐานข้อมูล (`*.db`) อยู่ใน `.gitignore` แล้ว ให้ใช้ไฟล์ `*.example` เป็นต้นแบบ
-
 ## เครดิต
 
 ภาพเครื่องมือในถาดจำลองมาจาก Roboflow Universe (CC BY 4.0) ดู `server/kitcheck/static/sim/CREDITS.txt`
